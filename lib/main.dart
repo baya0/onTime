@@ -1,20 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
-void main() {
-  runApp(const MainApp());
+import 'core/routes/app_pages.dart';
+import 'l10n/app_localizations.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize GetStorage
+  await GetStorage.init();
+
+  // Initialize services here
+  // await initServices();
+
+  runApp(MyApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
+    return GetMaterialApp(
+      title: 'onTime',
+
+      // Localization
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [Locale('en'), Locale('ar')],
+      locale: Locale('en'),
+
+      // Routes
+      initialRoute: AppPages.initial, // Starts with splash
+      getPages: AppPages.routes,
+
+      // Theme
+      theme: ThemeData(primaryColor: Color(0xFFFF6F00), fontFamily: 'Roboto'),
+
+      debugShowCheckedModeBanner: false,
     );
   }
 }

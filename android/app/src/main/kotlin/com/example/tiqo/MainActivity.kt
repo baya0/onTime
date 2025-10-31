@@ -1,4 +1,4 @@
-package com.example.tiqo
+package com.example.onTime
 
 import io.flutter.embedding.android.FlutterActivity
 
