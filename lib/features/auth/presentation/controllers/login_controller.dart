@@ -1,120 +1,124 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 
-import '../../domain/usecases/login_usecase.dart';
+import '../../../../core/style/app_colors.dart';
 
 class LoginController extends GetxController {
-  // Controllers for text fields
+  // Form key
+  final formKey = GlobalKey<FormState>();
+
+  // Text controllers
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
 
+  // Focus nodes
+  final phoneFocusNode = FocusNode();
+  final passwordFocusNode = FocusNode();
+
   // Observable states
   final isLoading = false.obs;
-  final isPasswordVisible = false.obs;
+  final obscurePassword = true.obs;
+  final rememberMe = false.obs;
 
-  // UseCase
-  final LoginUseCase loginUseCase;
-
-  // Storage
-  final _storage = GetStorage();
-
-  LoginController({required this.loginUseCase});
-
-  // Toggle password visibility
-  void togglePasswordVisibility() {
-    isPasswordVisible.value = !isPasswordVisible.value;
-  }
-
-  // Login function
-  Future<void> login() async {
-    // Validate inputs
-    if (phoneController.text.isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Please enter phone number',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      return;
-    }
-
-    if (passwordController.text.isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Please enter password',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      return;
-    }
-
-    // Start loading
-    isLoading.value = true;
-
-    // Call use case
-    final result = await loginUseCase(
-      phone: phoneController.text,
-      password: passwordController.text,
-    );
-
-    // Handle result
-    result.fold(
-      // Failure
-      (failure) {
-        isLoading.value = false;
-        Get.snackbar(
-          'Login Failed',
-          failure.message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      },
-      // Success
-      (data) async {
-        isLoading.value = false;
-
-        // Save token
-        final token = data['data']['token'];
-        await _storage.write('auth_token', token);
-        await _storage.write('is_logged_in', true);
-
-        // Save user data
-        final userData = data['data']['user'];
-        await _storage.write('user_data', userData);
-
-        // Show success message
-        Get.snackbar(
-          'Success',
-          'Login successful!',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
-
-        // Navigate to home
-        Get.offAllNamed('/home');
-      },
-    );
-  }
-
-  // Navigate to register
-  void goToRegister() {
-    Get.toNamed('/auth/register');
-  }
-
-  // Navigate to forgot password
-  void goToForgotPassword() {
-    Get.toNamed('/auth/forgot-password');
+  @override
+  void onInit() {
+    super.onInit();
+    _loadSavedCredentials();
   }
 
   @override
   void onClose() {
     phoneController.dispose();
     passwordController.dispose();
+    phoneFocusNode.dispose();
+    passwordFocusNode.dispose();
     super.onClose();
+  }
+
+  void _loadSavedCredentials() {
+    // TODO: Implement loading from storage service
+  }
+
+  void togglePasswordVisibility() {
+    obscurePassword.value = !obscurePassword.value;
+  }
+
+  void toggleRememberMe(bool? value) {
+    rememberMe.value = value ?? false;
+  }
+
+  /// Validate phone number
+  String? validatePhone(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'field_required'.tr; // CHANGED: Use .tr() instead of .tr
+    }
+    // Syrian phone number format: 09XXXXXXXX
+    if (!RegExp(r'^09[0-9]{8}$').hasMatch(value)) {
+      return 'invalid_phone'.tr; // CHANGED
+    }
+    return null;
+  }
+
+  /// Validate password
+  String? validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'field_required'.tr;
+    }
+    if (value.length < 8) {
+      return 'password_too_short'.tr;
+    }
+    return null;
+  }
+
+  /// Login function
+  Future<void> login() async {
+    if (!formKey.currentState!.validate()) {
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+
+      // TODO: Implement actual login API call
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Show success message
+      Get.snackbar(
+        'success'.tr, // CHANGED
+        'login_success'.tr, // CHANGED
+        backgroundColor: AppColors.success,
+        colorText: AppColors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+
+      // Navigate to home
+      // Get.offAllNamed(AppRoutes.home);
+    } catch (e) {
+      Get.snackbar(
+        'error'.tr, // CHANGED
+        e.toString(),
+        backgroundColor: AppColors.error,
+        colorText: AppColors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void goToForgotPassword() {
+    // Get.toNamed(AppRoutes.forgotPassword);
+  }
+
+  void goToRegister() {
+    // Get.toNamed(AppRoutes.register);
+  }
+
+  void continueAsGuest() {
+    // Get.offAllNamed(AppRoutes.home);
+  }
+
+  void becomeProvider() {
+    // Get.toNamed(AppRoutes.becomeProvider);
   }
 }

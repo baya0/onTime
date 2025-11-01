@@ -1,7 +1,14 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ontime/generated/locale_keys.g.dart';
 
-import '../../../../l10n/app_localizations.dart';
+import '../../../../core/style/app_colors.dart';
+import '../../../../core/style/app_dimensions.dart';
+import '../../../../core/style/app_text_styles.dart';
+import '../../../../core/utils/responsive.dart';
+import '../../../../core/widgets/custom_button.dart';
+import '../../../../core/widgets/custom_text_field.dart';
 import '../controllers/login_controller.dart';
 
 class LoginPage extends GetView<LoginController> {
@@ -9,181 +16,199 @@ class LoginPage extends GetView<LoginController> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      body: SingleChildScrollView(
-        physics: BouncingScrollPhysics(),
-        child: Column(children: [_buildHeader(), _buildFormCard(context, l10n)]),
+      body: Stack(
+        children: [
+          _buildBackgroundImage(),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: AppSpacing.screenPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: ResponsiveHelper.scaleHeight(80)),
+                  _buildHeader(),
+                  SizedBox(height: ResponsiveHelper.scaleHeight(40)),
+                  _buildLoginForm(),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackgroundImage() {
+    return Container(
+      height: ResponsiveHelper.screenHeight * 0.4,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [AppColors.secondary.withOpacity(0.8), AppColors.background],
+          stops: const [0.0, 1.0],
+        ),
+      ),
+      child: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/login_background.png'),
+            fit: BoxFit.cover,
+            opacity: 0.3,
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildHeader() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 40, horizontal: 24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF5F8D7D), Color(0xFF7BA598), Color(0xFF9CB5A8)],
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Status bar space
-          SizedBox(height: 20),
-
-          Text(
-            'Log in to your Account',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              height: 1.2,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Welcome back! Log in to continue',
-            style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 15),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFormCard(BuildContext context, AppLocalizations l10n) {
-    return Container(
-      width: double.infinity,
-      margin: EdgeInsets.all(20),
-      padding: EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 150, 33, 33),
-        borderRadius: BorderRadius.circular(40),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: Offset(0, 5)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Phone Number Field
-          _buildPhoneField(l10n),
-
-          SizedBox(height: 16),
-
-          // Password Field
-          _buildPasswordField(l10n),
-
-          SizedBox(height: 24),
-
-          // Login Button
-          _buildLoginButton(),
-
-          SizedBox(height: 16),
-
-          // Forgot Password
-          _buildForgotPassword(),
-
-          SizedBox(height: 24),
-
-          // Divider
-          _buildDivider(),
-
-          SizedBox(height: 24),
-
-          // Become Provider Button
-          _buildProviderButton(),
-
-          SizedBox(height: 20),
-
-          // Register Link
-          _buildRegisterLink(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPhoneField(AppLocalizations l10n) {
-    return TextField(
-      controller: controller.phoneController,
-      keyboardType: TextInputType.phone,
-      decoration: InputDecoration(
-        labelText: l10n.phone,
-        hintText: 'Write Your Phone Number',
-        hintStyle: TextStyle(color: Colors.grey[400]),
-        prefixIcon: Padding(
-          padding: EdgeInsets.only(left: 12, right: 8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.phone, color: Color(0xFFFF6F00), size: 20),
-              SizedBox(width: 8),
-              Text(
-                '+963',
-                style: TextStyle(
-                  color: Color(0xFFFF6F00),
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          tr(LocaleKeys.login_to_account),
+          style: AppTextStyles.h1Bold.copyWith(
+            color: AppColors.white,
+            shadows: [
+              Shadow(
+                color: Colors.black.withOpacity(0.3),
+                offset: const Offset(0, 2),
+                blurRadius: 4,
               ),
-              SizedBox(width: 8),
-              Container(height: 24, width: 1, color: Colors.grey[300]),
             ],
           ),
         ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(0xFFFF6F00)),
+        SizedBox(height: AppSpacing.space8),
+        Text(
+          tr(LocaleKeys.welcome_back), // CHANGED
+          style: AppTextStyles.body.copyWith(
+            color: AppColors.white,
+            shadows: [
+              Shadow(
+                color: Colors.black.withOpacity(0.3),
+                offset: const Offset(0, 1),
+                blurRadius: 2,
+              ),
+            ],
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(0xFFFF6F00).withOpacity(0.3)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(0xFFFF6F00), width: 2),
+      ],
+    );
+  }
+
+  Widget _buildLoginForm() {
+    return Container(
+      padding: EdgeInsets.all(AppSpacing.space24),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppSpacing.borderRadiusLarge),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Form(
+        key: controller.formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildPhoneField(),
+            SizedBox(height: AppSpacing.space16),
+            _buildPasswordField(),
+            SizedBox(height: AppSpacing.space8),
+            _buildForgotPasswordButton(),
+            SizedBox(height: AppSpacing.space24),
+            _buildLoginButton(),
+            SizedBox(height: AppSpacing.space24),
+            _buildDivider(),
+            SizedBox(height: AppSpacing.space24),
+            _buildBecomeProviderButton(),
+            SizedBox(height: AppSpacing.space16),
+            _buildRegisterSection(),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildPasswordField(AppLocalizations l10n) {
-    return Obx(
-      () => TextField(
-        controller: controller.passwordController,
-        obscureText: !controller.isPasswordVisible.value,
-        decoration: InputDecoration(
-          labelText: l10n.password,
-          hintText: 'Write Password...',
-          hintStyle: TextStyle(color: Colors.grey[400]),
-          prefixIcon: Icon(Icons.lock, color: Color(0xFFFF6F00), size: 20),
-          suffixIcon: IconButton(
-            icon: Icon(
-              controller.isPasswordVisible.value
-                  ? Icons.visibility_outlined
-                  : Icons.visibility_off_outlined,
-              color: Colors.grey[400],
+  Widget _buildPhoneField() {
+    return CustomTextField(
+      controller: controller.phoneController,
+      focusNode: controller.phoneFocusNode,
+      hintText: tr(LocaleKeys.write_phone_number),
+      keyboardType: TextInputType.phone,
+      textInputAction: TextInputAction.next,
+      prefixIcon: Container(
+        padding: EdgeInsets.all(AppSpacing.space12),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.space8,
+                vertical: AppSpacing.space4,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.orange50,
+                borderRadius: BorderRadius.circular(AppSpacing.borderRadiusSmall),
+              ),
+              child: Text(
+                '+963',
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-            onPressed: controller.togglePasswordVisibility,
-          ),
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Color(0xFFFF6F00)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Color(0xFFFF6F00).withOpacity(0.3)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Color(0xFFFF6F00), width: 2),
+            SizedBox(width: AppSpacing.space8),
+            Container(height: 24, width: 1, color: AppColors.grayLeastDark),
+          ],
+        ),
+      ),
+      validator: controller.validatePhone,
+      onSubmitted: (_) {
+        controller.passwordFocusNode.requestFocus();
+      },
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return Obx(
+      () => CustomTextField(
+        controller: controller.passwordController,
+        focusNode: controller.passwordFocusNode,
+        hintText: tr(LocaleKeys.write_password),
+        obscureTextRx: controller.obscurePassword,
+        isPassword: true,
+        keyboardType: TextInputType.visiblePassword,
+        textInputAction: TextInputAction.done,
+        prefixIcon: Icon(Icons.lock_outline, color: AppColors.textSecondary),
+        validator: controller.validatePassword,
+        onSubmitted: (_) {
+          controller.login();
+        },
+      ),
+    );
+  }
+
+  Widget _buildForgotPasswordButton() {
+    return Align(
+      alignment: AlignmentDirectional.centerEnd,
+      child: TextButton(
+        onPressed: controller.goToForgotPassword,
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.space8, vertical: AppSpacing.space4),
+        ),
+        child: Text(
+          tr(LocaleKeys.forgot_password),
+          style: AppTextStyles.body.copyWith(
+            color: AppColors.primary,
+            decoration: TextDecoration.underline,
           ),
         ),
       ),
@@ -191,101 +216,58 @@ class LoginPage extends GetView<LoginController> {
   }
 
   Widget _buildLoginButton() {
-    return Obx(
-      () => SizedBox(
-        height: 50,
-        child: ElevatedButton(
-          onPressed: controller.isLoading.value ? null : controller.login,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFF3D5A4F),
-            disabledBackgroundColor: Color(0xFF3D5A4F).withOpacity(0.6),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            elevation: 0,
-          ),
-          child: controller.isLoading.value
-              ? SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                )
-              : Text(
-                  'Log in',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildForgotPassword() {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: TextButton(
-        onPressed: controller.goToForgotPassword,
-        style: TextButton.styleFrom(padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4)),
-        child: Text(
-          'Forgot Password?',
-          style: TextStyle(color: Color(0xFFFF6F00), fontWeight: FontWeight.w500, fontSize: 14),
-        ),
-      ),
+    return CustomButton(
+      text: tr(LocaleKeys.login),
+      onPressed: controller.login,
+      isLoadingRx: controller.isLoading,
+      type: ButtonType.primary,
+      height: 56,
     );
   }
 
   Widget _buildDivider() {
     return Row(
       children: [
-        Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+        Expanded(child: Divider(color: AppColors.grayLeastDark, thickness: 1)),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.space16),
           child: Text(
-            'Or Enter as a Guest',
-            style: TextStyle(color: Colors.grey[500], fontSize: 13),
+            tr(LocaleKeys.or_enter_as_guest),
+            style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
           ),
         ),
-        Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+        Expanded(child: Divider(color: AppColors.grayLeastDark, thickness: 1)),
       ],
     );
   }
 
-  Widget _buildProviderButton() {
-    return SizedBox(
-      height: 50,
-      child: OutlinedButton(
-        onPressed: () {
-          // Navigate to provider registration
-        },
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(color: Color(0xFFFF6F00), width: 1.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        child: Text(
-          'Become a Provider',
-          style: TextStyle(
-            color: Color(0xFFFF6F00),
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-          ),
-        ),
-      ),
+  Widget _buildBecomeProviderButton() {
+    return CustomButton(
+      text: tr(LocaleKeys.become_a_provider),
+      onPressed: controller.becomeProvider,
+      type: ButtonType.outlined,
+      height: 52,
+      borderColor: AppColors.primary,
     );
   }
 
-  Widget _buildRegisterLink() {
+  Widget _buildRegisterSection() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text("Don't have an account? ", style: TextStyle(color: Colors.grey[600], fontSize: 14)),
-        GestureDetector(
-          onTap: controller.goToRegister,
+        Text(
+          tr(LocaleKeys.dont_have_account),
+          style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+        ),
+        TextButton(
+          onPressed: controller.goToRegister,
+          style: TextButton.styleFrom(padding: EdgeInsets.symmetric(horizontal: AppSpacing.space4)),
           child: Text(
-            'Click here',
-            style: TextStyle(color: Color(0xFFFF6F00), fontWeight: FontWeight.w600, fontSize: 14),
+            tr(LocaleKeys.click_here),
+            style: AppTextStyles.bodyBold.copyWith(
+              color: AppColors.primary,
+              decoration: TextDecoration.underline,
+            ),
           ),
         ),
       ],

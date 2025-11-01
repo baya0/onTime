@@ -1,49 +1,61 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 
-import 'core/routes/app_pages.dart';
-import 'l10n/app_localizations.dart';
+import 'core/style/app_theme.dart';
+import 'features/auth/presentation/bindings/login_binding.dart';
+import 'features/auth/presentation/pages/login_page.dart';
 
 void main() async {
+  // Required for easy_localization
   WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
 
-  // Initialize GetStorage
-  await GetStorage.init();
-
-  // Initialize services here
-  // await initServices();
-
-  runApp(MyApp());
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [Locale('en', 'US'), Locale('ar', 'SA')],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('en', 'US'),
+      startLocale: const Locale('en', 'US'),
+      child: MainApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MainApp extends StatelessWidget {
+  const MainApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'onTime',
-
-      // Localization
-      localizationsDelegates: [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: [Locale('en'), Locale('ar')],
-      locale: Locale('en'),
-
-      // Routes
-      initialRoute: AppPages.initial, // Starts with splash
-      getPages: AppPages.routes,
+      // App Configuration
+      debugShowCheckedModeBanner: false,
 
       // Theme
-      theme: ThemeData(primaryColor: Color(0xFFFF6F00), fontFamily: 'Roboto'),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.light,
 
-      debugShowCheckedModeBanner: false,
+      // Easy Localization setup
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
+
+      // Initial Route
+      initialBinding: LoginBinding(),
+      home: const LoginPage(),
+
+      // GetX Configuration
+      defaultTransition: Transition.cupertino,
+      transitionDuration: const Duration(milliseconds: 300),
+
+      // Error handling
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.0)),
+          child: child!,
+        );
+      },
     );
   }
 }
