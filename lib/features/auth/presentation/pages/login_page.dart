@@ -184,10 +184,13 @@ class LoginPage extends GetView<LoginController> {
       isPassword: true,
       keyboardType: TextInputType.visiblePassword,
       textInputAction: TextInputAction.done,
-      prefixIcon: Assets.icons.auth.lock.svg(
-        width: 18,
-        height: 22,
-        colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+      prefixIcon: Container(
+        padding: EdgeInsets.all(AppSpacing.space12),
+        child: Assets.icons.auth.lock.svg(
+          width: 18,
+          height: 18,
+          colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+        ),
       ),
       validator: controller.validatePassword,
       onSubmitted: (_) {
@@ -206,10 +209,7 @@ class LoginPage extends GetView<LoginController> {
         ),
         child: Text(
           tr(LocaleKeys.forgot_password),
-          style: AppTextStyles.body.copyWith(
-            color: AppColors.primary,
-            decoration: TextDecoration.underline,
-          ),
+          style: AppTextStyles.body.copyWith(color: AppColors.primary),
         ),
       ),
     );
