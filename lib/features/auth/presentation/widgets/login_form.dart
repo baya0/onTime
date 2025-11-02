@@ -11,8 +11,6 @@ import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../generated/assets.gen.dart';
 import '../controllers/login_controller.dart';
 
-/// Login form widget - contains all login-specific form fields and actions
-/// Separated from LoginPage to follow single responsibility principle
 class LoginForm extends GetView<LoginController> {
   const LoginForm({super.key});
 
