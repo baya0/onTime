@@ -101,7 +101,7 @@ class LoginPage extends GetView<LoginController> {
 
   Widget _buildLoginForm() {
     return Container(
-      padding: EdgeInsets.all(AppSpacing.space24),
+      // padding: EdgeInsets.all(AppSpacing.space24),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(AppSpacing.borderRadiusLarge),
@@ -155,12 +155,23 @@ class LoginPage extends GetView<LoginController> {
                 vertical: AppSpacing.space4,
               ),
 
-              child: Text(
-                '+963',
-                style: AppTextStyles.body.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Assets.icons.ui.phoneRing.svg(
+                    width: 20,
+                    height: 20,
+                    colorFilter: ColorFilter.mode(AppColors.orange400, BlendMode.srcIn),
+                  ),
+                  SizedBox(width: 5),
+                  Text(
+                    '+963',
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.orange400,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(width: AppSpacing.space8),
@@ -189,7 +200,7 @@ class LoginPage extends GetView<LoginController> {
         child: Assets.icons.auth.lock.svg(
           width: 18,
           height: 18,
-          colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+          colorFilter: ColorFilter.mode(AppColors.orange400, BlendMode.srcIn),
         ),
       ),
       validator: controller.validatePassword,
@@ -209,7 +220,7 @@ class LoginPage extends GetView<LoginController> {
         ),
         child: Text(
           tr(LocaleKeys.forgot_password),
-          style: AppTextStyles.body.copyWith(color: AppColors.primary),
+          style: AppTextStyles.body.copyWith(color: AppColors.orange400),
         ),
       ),
     );
@@ -221,7 +232,11 @@ class LoginPage extends GetView<LoginController> {
       onPressed: controller.login,
       isLoadingRx: controller.isLoading,
       type: ButtonType.primary,
-      height: 56,
+      textStyle: AppTextStyles.body.copyWith(
+        color: AppColors.white,
+        fontWeight: FontWeight.w500,
+        fontSize: 16,
+      ),
     );
   }
 
@@ -233,7 +248,11 @@ class LoginPage extends GetView<LoginController> {
           padding: EdgeInsets.symmetric(horizontal: AppSpacing.space16),
           child: Text(
             tr(LocaleKeys.or_enter_as_guest),
-            style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.green900,
+              fontWeight: FontWeight.w500,
+              fontSize: 16,
+            ),
           ),
         ),
         Expanded(child: Divider(color: AppColors.grayLeastDark, thickness: 1)),
@@ -246,8 +265,13 @@ class LoginPage extends GetView<LoginController> {
       text: tr(LocaleKeys.become_a_provider),
       onPressed: controller.becomeProvider,
       type: ButtonType.outlined,
-      height: 52,
-      borderColor: AppColors.primary,
+      borderColor: AppColors.orange400,
+      textColor: AppColors.orange400,
+      textStyle: AppTextStyles.body.copyWith(
+        color: AppColors.orange400,
+        fontWeight: FontWeight.w500,
+        fontSize: 16,
+      ),
     );
   }
 
@@ -265,7 +289,7 @@ class LoginPage extends GetView<LoginController> {
           child: Text(
             tr(LocaleKeys.click_here),
             style: AppTextStyles.bodyBold.copyWith(
-              color: AppColors.primary,
+              color: AppColors.orange400,
               decoration: TextDecoration.underline,
             ),
           ),
