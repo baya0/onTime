@@ -26,7 +26,7 @@ abstract class LocaleKeys {
   static const skip = 'skip';
   static const next = 'next';
   static const previous = 'previous';
-  static const continue_ = 'continue';
+  static const continue_button = 'continue';
   static const submit = 'submit';
   static const login = 'login';
   static const register = 'register';

@@ -17,6 +17,7 @@ dependencies:
   get_storage: ^2.1.1
   dartz: ^0.10.1
   easy_localization: ^3.0.8
+  flutter_svg: ^2.2.1
  
 
 dev_dependencies:
@@ -29,9 +30,10 @@ dev_dependencies:
 
 # FlutterGen configuration
 flutter_gen:
+  output: lib/generated/
   integrations:
     flutter_svg: true
- 
+
 
 flutter:
   uses-material-design: true
@@ -39,6 +41,14 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/icons/auth/
+    - assets/icons/buttons/
+    - assets/icons/categories/
+    - assets/icons/navigation/
+    - assets/icons/provider/
+    - assets/icons/social/
+    - assets/icons/status/
+    - assets/icons/ui/
     - assets/translations/  
   
   fonts:

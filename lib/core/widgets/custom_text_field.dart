@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import '../../generated/assets.gen.dart';
 import '../style/app_colors.dart';
 import '../style/app_dimensions.dart';
 import '../style/app_text_styles.dart';
@@ -78,10 +79,18 @@ class CustomTextField extends StatelessWidget {
           prefixIcon: prefixIcon,
           suffixIcon: isPassword
               ? IconButton(
-                  icon: Icon(
-                    obscureText.value ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                    color: AppColors.textSecondary,
-                  ),
+                  icon: obscureText.value
+                      ? Assets.icons.auth.eyeOn.svg(
+                          width: 18,
+                          height: 18,
+                          colorFilter: ColorFilter.mode(AppColors.textSecondary, BlendMode.srcIn),
+                        )
+                      : Assets.icons.auth.eyeOff.svg(
+                          width: 18,
+                          height: 18,
+                          colorFilter: ColorFilter.mode(AppColors.textSecondary, BlendMode.srcIn),
+                        ),
+
                   onPressed: () => obscureText.value = !obscureText.value,
                 )
               : suffixIcon,
@@ -93,11 +102,11 @@ class CustomTextField extends StatelessWidget {
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppSpacing.borderRadiusSmall),
-            borderSide: BorderSide(color: AppColors.grayLeastDark),
+            borderSide: BorderSide(color: AppColors.grayLessDark),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppSpacing.borderRadiusSmall),
-            borderSide: BorderSide(color: AppColors.grayLeastDark),
+            borderSide: BorderSide(color: AppColors.grayLessDark),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppSpacing.borderRadiusSmall),
@@ -113,7 +122,7 @@ class CustomTextField extends StatelessWidget {
           ),
           disabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppSpacing.borderRadiusSmall),
-            borderSide: BorderSide(color: AppColors.grayLeastDark),
+            borderSide: BorderSide(color: AppColors.grayLessDark),
           ),
           hintStyle: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           labelStyle: AppTextStyles.body.copyWith(color: AppColors.textSecondary),

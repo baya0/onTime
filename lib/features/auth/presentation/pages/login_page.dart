@@ -1,14 +1,15 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ontime/generated/locale_keys.g.dart';
 
+import '../../../../core/localization/strings.dart';
 import '../../../../core/style/app_colors.dart';
 import '../../../../core/style/app_dimensions.dart';
 import '../../../../core/style/app_text_styles.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
+import '../../../../generated/assets.gen.dart';
 import '../controllers/login_controller.dart';
 
 class LoginPage extends GetView<LoginController> {
@@ -26,9 +27,9 @@ class LoginPage extends GetView<LoginController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: ResponsiveHelper.scaleHeight(80)),
+                  SizedBox(height: ResponsiveHelper.scaleHeight(10)),
                   _buildHeader(),
-                  SizedBox(height: ResponsiveHelper.scaleHeight(40)),
+                  SizedBox(height: ResponsiveHelper.scaleHeight(30)),
                   _buildLoginForm(),
                 ],
               ),
@@ -41,22 +42,22 @@ class LoginPage extends GetView<LoginController> {
 
   Widget _buildBackgroundImage() {
     return Container(
-      height: ResponsiveHelper.screenHeight * 0.4,
+      height: ResponsiveHelper.screenHeight * 0.3,
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.secondary.withOpacity(0.8), AppColors.background],
+          colors: [AppColors.secondary, AppColors.secondary],
           stops: const [0.0, 1.0],
         ),
       ),
       child: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/login_background.png'),
+            image: AssetImage('assets/images/auth-background.webp'),
             fit: BoxFit.cover,
-            opacity: 0.3,
+            opacity: 0.9,
           ),
         ),
       ),
@@ -82,7 +83,7 @@ class LoginPage extends GetView<LoginController> {
         ),
         SizedBox(height: AppSpacing.space8),
         Text(
-          tr(LocaleKeys.welcome_back), // CHANGED
+          tr(LocaleKeys.welcome_back),
           style: AppTextStyles.body.copyWith(
             color: AppColors.white,
             shadows: [
@@ -153,10 +154,7 @@ class LoginPage extends GetView<LoginController> {
                 horizontal: AppSpacing.space8,
                 vertical: AppSpacing.space4,
               ),
-              decoration: BoxDecoration(
-                color: AppColors.orange50,
-                borderRadius: BorderRadius.circular(AppSpacing.borderRadiusSmall),
-              ),
+
               child: Text(
                 '+963',
                 style: AppTextStyles.body.copyWith(
@@ -166,7 +164,7 @@ class LoginPage extends GetView<LoginController> {
               ),
             ),
             SizedBox(width: AppSpacing.space8),
-            Container(height: 24, width: 1, color: AppColors.grayLeastDark),
+            Container(height: 24, width: 1, color: AppColors.grayLessDark),
           ],
         ),
       ),
@@ -178,21 +176,23 @@ class LoginPage extends GetView<LoginController> {
   }
 
   Widget _buildPasswordField() {
-    return Obx(
-      () => CustomTextField(
-        controller: controller.passwordController,
-        focusNode: controller.passwordFocusNode,
-        hintText: tr(LocaleKeys.write_password),
-        obscureTextRx: controller.obscurePassword,
-        isPassword: true,
-        keyboardType: TextInputType.visiblePassword,
-        textInputAction: TextInputAction.done,
-        prefixIcon: Icon(Icons.lock_outline, color: AppColors.textSecondary),
-        validator: controller.validatePassword,
-        onSubmitted: (_) {
-          controller.login();
-        },
+    return CustomTextField(
+      controller: controller.passwordController,
+      focusNode: controller.passwordFocusNode,
+      hintText: tr(LocaleKeys.write_password),
+      obscureTextRx: controller.obscurePassword,
+      isPassword: true,
+      keyboardType: TextInputType.visiblePassword,
+      textInputAction: TextInputAction.done,
+      prefixIcon: Assets.icons.auth.lock.svg(
+        width: 18,
+        height: 22,
+        colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
       ),
+      validator: controller.validatePassword,
+      onSubmitted: (_) {
+        controller.login();
+      },
     );
   }
 
