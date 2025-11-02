@@ -35,7 +35,7 @@ class AppSpacing {
   static const double space32 = 32.0;
 
   /// 36px - Extra extra large spacing
-  static const double space36 = 36.0;
+  static const double space40 = 40.0;
 
   // ==================== SEMANTIC SPACING ====================
   // Named based on usage for better readability
@@ -56,7 +56,7 @@ class AppSpacing {
   static const double xl = space32;
 
   /// Extra extra large spacing
-  static const double xxl = space36;
+  static const double xxl = space40;
 
   // ==================== GRID LAYOUT ====================
 
@@ -91,16 +91,22 @@ class AppSpacing {
   // ==================== BORDER RADIUS ====================
 
   /// Small border radius
-  static const double borderRadiusSmall = space8;
+  static const double borderRadiusXSmall = space8;
 
   /// Medium border radius
-  static const double borderRadiusMedium = space12;
+  static const double borderRadiusSmall = space12;
 
   /// Large border radius
-  static const double borderRadiusLarge = space16;
+  static const double borderRadiusMedium = space16;
 
   /// Extra large border radius
-  static const double borderRadiusXLarge = space24;
+  static const double borderRadiusLarge = space24;
+
+  /// Extra large border radius
+  static const double borderRadiusXLarge = space32;
+
+  /// Extra large border radius
+  static const double borderRadiusXXLarge = space40;
 
   // ==================== COMMON EDGE INSETS ====================
 
