@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 
 import 'core/style/app_theme.dart';
@@ -9,6 +10,7 @@ import 'features/auth/presentation/pages/login_page.dart';
 void main() async {
   // Required for easy_localization
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await EasyLocalization.ensureInitialized();
 
   runApp(
