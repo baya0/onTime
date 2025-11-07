@@ -132,5 +132,11 @@ class ApiService {
     );
   }
 
-  // Add more methods as needed...
+  // Cities
+  Future<Response> getCities({String? name}) async {
+    return await _dio.get(
+      ApiConstants.cities,
+      queryParameters: name != null ? {'name': name} : null,
+    );
+  }
 }
