@@ -80,14 +80,14 @@ class CustomTextField extends StatelessWidget {
           suffixIcon: isPassword
               ? IconButton(
                   icon: obscureText.value
-                      ? Assets.icons.auth.eyeOn.svg(
-                          width: 20,
-                          height: 20,
-                          colorFilter: ColorFilter.mode(AppColors.textSecondary, BlendMode.srcIn),
-                        )
-                      : Assets.icons.auth.eyeOff.svg(
+                      ? Assets.icons.auth.eyeOff.svg(
                           width: 18,
                           height: 18,
+                          colorFilter: ColorFilter.mode(AppColors.textSecondary, BlendMode.srcIn),
+                        )
+                      : Assets.icons.auth.eyeOn.svg(
+                          width: 20,
+                          height: 20,
                           colorFilter: ColorFilter.mode(AppColors.textSecondary, BlendMode.srcIn),
                         ),
 

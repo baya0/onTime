@@ -50,11 +50,11 @@ class LoginController extends GetxController {
   /// Validate phone number
   String? validatePhone(String? value) {
     if (value == null || value.isEmpty) {
-      return 'field_required'.tr; // CHANGED: Use .tr() instead of .tr
+      return 'field_required'.tr;
     }
     // Syrian phone number format: 09XXXXXXXX
     if (!RegExp(r'^09[0-9]{8}$').hasMatch(value)) {
-      return 'invalid_phone'.tr; // CHANGED
+      return 'invalid_phone'.tr;
     }
     return null;
   }
