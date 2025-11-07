@@ -1,32 +1,44 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../core/localization/strings.dart';
 import '../../../../core/routes/app_pages.dart';
 import '../../../../core/services/api_service.dart';
-import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/storage_service.dart';
+import '../../../../core/style/app_colors.dart';
 
 class RegisterController extends GetxController {
-  final ApiService _apiService = Get.find();
-  final AuthService _authService = Get.find();
-  final StorageService _storageService = Get.find();
+  final ApiService _apiService = Get.find<ApiService>();
+  final StorageService _storageService = Get.find<StorageService>();
+
+  // Form key
+  final formKey = GlobalKey<FormState>();
 
   // Text controllers
-  final TextEditingController firstNameController = TextEditingController();
-  final TextEditingController lastNameController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final firstNameController = TextEditingController();
+  final lastNameController = TextEditingController();
+  final phoneController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+
+  // Focus nodes
+  final firstNameFocusNode = FocusNode();
+  final lastNameFocusNode = FocusNode();
+  final phoneFocusNode = FocusNode();
+  final cityFocusNode = FocusNode();
+  final passwordFocusNode = FocusNode();
+  final confirmPasswordFocusNode = FocusNode();
 
   // Observable states
-  final RxBool isLoading = false.obs;
-  final RxBool obscurePassword = true.obs;
-  final RxBool obscureConfirmPassword = true.obs;
-  final RxBool agreeToTerms = false.obs;
+  final isLoading = false.obs;
+  final obscurePassword = true.obs;
+  final obscureConfirmPassword = true.obs;
+  final agreeToTerms = false.obs;
 
   // City selection
-  final RxList<Map<String, dynamic>> cities = <Map<String, dynamic>>[].obs;
-  final RxBool isLoadingCities = false.obs;
+  final cities = <Map<String, dynamic>>[].obs;
+  final isLoadingCities = false.obs;
   final Rxn<int> selectedCityId = Rxn<int>();
   final Rxn<String> selectedCityName = Rxn<String>();
 
@@ -43,27 +55,25 @@ class RegisterController extends GetxController {
     phoneController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
+    firstNameFocusNode.dispose();
+    lastNameFocusNode.dispose();
+    phoneFocusNode.dispose();
+    cityFocusNode.dispose();
+    passwordFocusNode.dispose();
+    confirmPasswordFocusNode.dispose();
     super.onClose();
-  }
-
-  void togglePasswordVisibility() {
-    obscurePassword.value = !obscurePassword.value;
-  }
-
-  void toggleConfirmPasswordVisibility() {
-    obscureConfirmPassword.value = !obscureConfirmPassword.value;
   }
 
   void selectCity(int cityId, String cityName) {
     selectedCityId.value = cityId;
     selectedCityName.value = cityName;
-    print('✅ Selected city: $cityName (ID: $cityId)');
+    debugPrint('✅ Selected city: $cityName (ID: $cityId)');
   }
 
   Future<void> loadCities() async {
     try {
       isLoadingCities.value = true;
-      print('🔄 Loading cities...');
+      debugPrint('🔄 Loading cities...');
 
       final response = await _apiService.getCities();
 
@@ -71,40 +81,37 @@ class RegisterController extends GetxController {
         final data = response.data['data'] as List;
         cities.value = data.map((city) => {'id': city['id'], 'name': city['name']}).toList();
 
-        print('✅ Loaded ${cities.length} cities');
+        debugPrint('✅ Loaded ${cities.length} cities');
       } else {
-        print('❌ Failed to load cities: ${response.data}');
-        Get.snackbar(
-          'error'.tr,
-          'failed_to_load_cities'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withOpacity(0.1),
-          colorText: Colors.red,
-        );
+        debugPrint('❌ Failed to load cities: ${response.data}');
+        _showError(tr(LocaleKeys.failed_to_load_cities));
       }
     } catch (e) {
-      print('❌ Error loading cities: $e');
-      Get.snackbar(
-        'error'.tr,
-        'network_error'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
-      );
+      debugPrint('❌ Error loading cities: $e');
+      _showError(tr(LocaleKeys.network_error));
     } finally {
       isLoadingCities.value = false;
     }
   }
 
   Future<void> register() async {
-    // Validation
-    if (!_validateInputs()) {
+    if (!formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (!agreeToTerms.value) {
+      _showError(tr(LocaleKeys.must_agree_to_terms));
+      return;
+    }
+
+    if (selectedCityId.value == null) {
+      _showError(tr(LocaleKeys.city_required));
       return;
     }
 
     try {
       isLoading.value = true;
-      print('🔄 Starting registration...');
+      debugPrint('🔄 Starting registration...');
 
       final response = await _apiService.register(
         firstName: firstNameController.text.trim(),
@@ -115,11 +122,10 @@ class RegisterController extends GetxController {
         cityId: selectedCityId.value!,
       );
 
-      print('📡 Register response: ${response.data}');
+      debugPrint('📡 Register response: ${response.data}');
 
       if (response.statusCode == 200 && response.data['success'] == true) {
         final data = response.data['data'];
-        final bool isVerified = data['verify'] ?? false;
         final user = data['user'];
 
         // Store user data
@@ -128,173 +134,86 @@ class RegisterController extends GetxController {
         _storageService.write('last_name', user['last_name']);
         _storageService.write('phone', user['phone']);
         _storageService.write('city_id', user['city_id']);
-        _storageService.write('is_verified', isVerified);
 
-        print('✅ Registration successful');
-        print('   User ID: ${user['id']}');
-        print('   Phone: ${user['phone']}');
-        print('   Verified: $isVerified');
+        debugPrint('✅ Registration successful');
 
         Get.snackbar(
-          'success'.tr,
-          'register_success'.tr,
+          tr(LocaleKeys.success),
+          tr(LocaleKeys.register_success),
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.withOpacity(0.1),
-          colorText: Colors.green,
+          backgroundColor: AppColors.green500.withOpacity(0.1),
+          colorText: AppColors.green900,
+          margin: EdgeInsets.all(16),
         );
 
-        // Navigate to verification screen if not verified
-        // For now, navigate to login
+        // Navigate to login
         await Future.delayed(const Duration(seconds: 1));
         Get.offAllNamed(Routes.login);
-
-        // TODO: Navigate to OTP verification if isVerified is false
-        // if (!isVerified) {
-        //   Get.offAllNamed(Routes.otpVerification, arguments: {
-        //     'phone': phoneController.text.trim(),
-        //   });
-        // } else {
-        //   Get.offAllNamed(Routes.home);
-        // }
       } else {
-        final message = response.data['message'] ?? 'registration_failed'.tr;
-        print('❌ Registration failed: $message');
-
-        Get.snackbar(
-          'error'.tr,
-          message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withOpacity(0.1),
-          colorText: Colors.red,
-        );
+        final message = response.data['message'] ?? tr(LocaleKeys.registration_failed);
+        _showError(message);
       }
     } catch (e) {
-      print('❌ Registration error: $e');
-      Get.snackbar(
-        'error'.tr,
-        'network_error'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
-      );
+      debugPrint('❌ Registration error: $e');
+      _showError(tr(LocaleKeys.network_error));
     } finally {
       isLoading.value = false;
     }
   }
 
-  bool _validateInputs() {
-    // Check first name
-    if (firstNameController.text.trim().isEmpty) {
-      Get.snackbar(
-        'error'.tr,
-        'first_name_required'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
-      );
-      return false;
+  // Validators
+  String? validateFirstName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return tr(LocaleKeys.first_name_required);
     }
-
-    // Check last name
-    if (lastNameController.text.trim().isEmpty) {
-      Get.snackbar(
-        'error'.tr,
-        'last_name_required'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
-      );
-      return false;
-    }
-
-    // Check phone
-    if (phoneController.text.trim().isEmpty) {
-      Get.snackbar(
-        'error'.tr,
-        'phone_required'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
-      );
-      return false;
-    }
-
-    // Check phone format (should be 9 digits after +963)
-    if (phoneController.text.trim().length < 9) {
-      Get.snackbar(
-        'error'.tr,
-        'invalid_phone'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
-      );
-      return false;
-    }
-
-    // Check city selection
-    if (selectedCityId.value == null) {
-      Get.snackbar(
-        'error'.tr,
-        'city_required'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
-      );
-      return false;
-    }
-
-    // Check password
-    if (passwordController.text.isEmpty) {
-      Get.snackbar(
-        'error'.tr,
-        'password_required'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
-      );
-      return false;
-    }
-
-    // Check password length
-    if (passwordController.text.length < 8) {
-      Get.snackbar(
-        'error'.tr,
-        'password_too_short'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
-      );
-      return false;
-    }
-
-    // Check password confirmation
-    if (passwordController.text != confirmPasswordController.text) {
-      Get.snackbar(
-        'error'.tr,
-        'passwords_dont_match'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
-      );
-      return false;
-    }
-
-    // Check terms agreement
-    if (!agreeToTerms.value) {
-      Get.snackbar(
-        'error'.tr,
-        'must_agree_to_terms'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
-      );
-      return false;
-    }
-
-    return true;
+    return null;
   }
 
-  void navigateToLogin() {
-    Get.offAllNamed(Routes.login);
+  String? validateLastName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return tr(LocaleKeys.last_name_required);
+    }
+    return null;
+  }
+
+  String? validatePhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return tr(LocaleKeys.phone_required);
+    }
+    if (value.trim().length < 9) {
+      return tr(LocaleKeys.invalid_phone);
+    }
+    return null;
+  }
+
+  String? validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return tr(LocaleKeys.password_required);
+    }
+    if (value.length < 8) {
+      return tr(LocaleKeys.password_too_short);
+    }
+    return null;
+  }
+
+  String? validateConfirmPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return tr(LocaleKeys.password_required);
+    }
+    if (value != passwordController.text) {
+      return tr(LocaleKeys.passwords_dont_match);
+    }
+    return null;
+  }
+
+  void _showError(String message) {
+    Get.snackbar(
+      tr(LocaleKeys.error),
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: AppColors.error.withOpacity(0.1),
+      colorText: AppColors.error,
+      margin: EdgeInsets.all(16),
+    );
   }
 }

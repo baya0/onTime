@@ -18,6 +18,7 @@ class AuthLayout extends StatelessWidget {
   final Widget child;
   final String? backgroundImage;
   final double backgroundHeightRatio;
+  final bool showBackButton;
 
   const AuthLayout({
     super.key,
@@ -26,6 +27,7 @@ class AuthLayout extends StatelessWidget {
     required this.child,
     this.backgroundImage,
     this.backgroundHeightRatio = 0.25,
+    this.showBackButton = false,
   });
 
   @override

@@ -83,4 +83,23 @@ abstract class LocaleKeys {
   static const profile_updated = 'profile_updated';
   static const password_changed = 'password_changed';
   static const password_reset = 'password_reset';
+  // Register page keys
+  static const sign_up = 'sign_up';
+  static const sign_up_to_create_account = 'sign_up_to_create_account';
+
+  static const state = 'state';
+
+  static const i_agree_with = 'i_agree_with';
+  static const terms_and_policies = 'terms_and_policies';
+
+  // Validation messages
+  static const no_cities_available = 'no_cities_available';
+  static const failed_to_load_cities = 'failed_to_load_cities';
+  static const first_name_required = 'first_name_required';
+  static const last_name_required = 'last_name_required';
+  static const phone_required = 'phone_required';
+  static const city_required = 'city_required';
+  static const password_required = 'password_required';
+  static const must_agree_to_terms = 'must_agree_to_terms';
+  static const registration_failed = 'registration_failed';
 }
