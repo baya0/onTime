@@ -3,15 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 
+import 'core/routes/app_pages.dart';
+import 'core/services/api_service.dart';
+import 'core/services/auth_service.dart';
+import 'core/services/storage_service.dart';
 import 'core/style/app_theme.dart';
-import 'features/auth/presentation/bindings/login_binding.dart';
-import 'features/auth/presentation/pages/login_page.dart';
 
 void main() async {
   // Required for easy_localization
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   await EasyLocalization.ensureInitialized();
+
+  // Initialize services
+  Get.put(StorageService());
+  Get.put(ApiService());
+  await Get.putAsync(() => AuthService().init());
 
   runApp(
     EasyLocalization(
@@ -44,8 +51,8 @@ class MainApp extends StatelessWidget {
       locale: context.locale,
 
       // Initial Route
-      initialBinding: LoginBinding(),
-      home: const LoginPage(),
+      initialRoute: AppPages.initial, // ← Will start at Routes.splash
+      getPages: AppPages.routes,
 
       // GetX Configuration
       defaultTransition: Transition.cupertino,
