@@ -32,8 +32,11 @@ class $AssetsImagesGen {
   AssetGenImage get authBackground =>
       const AssetGenImage('assets/images/auth-background.webp');
 
+  /// File path: assets/images/logo.png
+  AssetGenImage get logo => const AssetGenImage('assets/images/logo.png');
+
   /// List of all assets
-  List<AssetGenImage> get values => [authBackground];
+  List<AssetGenImage> get values => [authBackground, logo];
 }
 
 class $AssetsTranslationsGen {
