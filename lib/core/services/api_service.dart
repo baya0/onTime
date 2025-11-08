@@ -114,6 +114,27 @@ class ApiService {
     return await _dio.post(ApiConstants.login, data: {'phone': phone, 'password': password});
   }
 
+  // Auth - Verify Code
+  Future<Response> verifyCode({
+    required String phone,
+    required int code,
+    required bool forVerifyAccount,
+  }) async {
+    return await _dio.post(
+      ApiConstants.verifyCode,
+      data: {
+        'phone': phone,
+        'code': code,
+        'for_verifiy_account': forVerifyAccount ? 1 : 0, // Note: API uses 'verifiy' typo
+      },
+    );
+  }
+
+  // Auth - Resend Code
+  Future<Response> resendCode({required String phone}) async {
+    return await _dio.post(ApiConstants.resendCode, data: {'phone': phone});
+  }
+
   // Auth - Logout
   Future<Response> logout() async {
     return await _dio.delete(ApiConstants.logout);

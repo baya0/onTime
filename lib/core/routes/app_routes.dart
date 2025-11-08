@@ -9,6 +9,9 @@ abstract class Routes {
   // Auth routes
   static const login = '/auth/login';
   static const register = '/auth/register';
+  static const verify = '/auth/verify';
+  static const forgotPassword = '/auth/forgot-password';
+  static const resetPassword = '/auth/reset-password';
 
   // Other routes
   static const categories = '/categories';
