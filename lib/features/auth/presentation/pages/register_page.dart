@@ -1,11 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ontime/features/auth/presentation/widgets/register_form.dart';
 
 import '../../../../core/localization/strings.dart';
 import '../controllers/register_controller.dart';
 import '../widgets/auth_layout.dart';
-import '../widgets/register_form.dart';
 
 /// Register page following the same pattern as LoginPage
 class RegisterPage extends GetView<RegisterController> {

@@ -201,6 +201,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+  dlibphonenumber:
+    dependency: transitive
+    description:
+      name: dlibphonenumber
+      sha256: "30ca8ad157485cf34520330bd6f31d1b6a26a5855bda98c6a1e6ef453fd049e0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.51"
   easy_localization:
     dependency: "direct main"
     description:
@@ -217,6 +225,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.0.2"
+  equatable:
+    dependency: transitive
+    description:
+      name: equatable
+      sha256: "567c64b3cb4cf82397aac55f4f0cbd3ca20d77c6c03bedbc4ceaddc08904aef7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.7"
   fake_async:
     dependency: transitive
     description:
@@ -397,6 +413,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.20.2"
+  intl_phone_number_input:
+    dependency: "direct main"
+    description:
+      name: intl_phone_number_input
+      sha256: "9d4d7f174cfc3a85b238e0b465ec0e7232fc0815a779e5a58fbf118dee26dfa0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.7.5"
   io:
     dependency: transitive
     description:
@@ -565,6 +589,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
+  phone_numbers_parser:
+    dependency: "direct main"
+    description:
+      name: phone_numbers_parser
+      sha256: cfd5217cd1c132f3cd07d7b91f29a44219333bb1723c0480044a9cbac0e47eed
+      url: "https://pub.dev"
+    source: hosted
+    version: "9.0.16"
   platform:
     dependency: transitive
     description:
@@ -597,6 +629,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.3"
+  protobuf:
+    dependency: transitive
+    description:
+      name: protobuf
+      sha256: "2fcc8a202ca7ec17dab7c97d6b6d91cf03aa07fe6f65f8afbb6dfa52cc5bd902"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.1.0"
   pub_semver:
     dependency: transitive
     description:

@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
 import '../../../../core/localization/strings.dart';
 import '../../../../core/style/app_colors.dart';
@@ -40,51 +41,51 @@ class LoginForm extends GetView<LoginController> {
   }
 
   Widget _buildPhoneField() {
-    return CustomTextField(
-      controller: controller.phoneController,
-      focusNode: controller.phoneFocusNode,
-      hintText: tr(LocaleKeys.write_phone_number),
-      keyboardType: TextInputType.phone,
-      textInputAction: TextInputAction.next,
-      prefixIcon: Container(
-        padding: EdgeInsets.all(AppSpacing.space12),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.space8,
-                vertical: AppSpacing.space4,
-              ),
-
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Assets.icons.ui.phoneRing.svg(
-                    width: 20,
-                    height: 20,
-                    colorFilter: ColorFilter.mode(AppColors.orange400, BlendMode.srcIn),
-                  ),
-                  SizedBox(width: 5),
-                  Text(
-                    '+963',
-                    style: AppTextStyles.body.copyWith(
-                      color: AppColors.orange400,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(width: AppSpacing.space8),
-            Container(height: 24, width: 1, color: AppColors.grayLessDark),
-          ],
-        ),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.grayLessDark),
       ),
-      validator: controller.validatePhone,
-      onSubmitted: (_) {
-        controller.passwordFocusNode.requestFocus();
-      },
+      child: InternationalPhoneNumberInput(
+        onInputChanged: (PhoneNumber number) {
+          controller.onPhoneNumberChanged(number);
+        },
+        onInputValidated: (bool isValid) {
+          debugPrint('📱 Phone validation: $isValid');
+        },
+        selectorConfig: const SelectorConfig(
+          selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
+          useEmoji: true,
+          setSelectorButtonAsPrefixIcon: true,
+          leadingPadding: 16,
+        ),
+        ignoreBlank: false,
+        autoValidateMode: AutovalidateMode.disabled,
+        initialValue: PhoneNumber(isoCode: 'SY'), // Default to Syria
+        formatInput: true,
+        keyboardType: TextInputType.phone,
+        inputDecoration: InputDecoration(
+          hintText: tr(LocaleKeys.write_phone_number),
+          hintStyle: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          errorBorder: InputBorder.none,
+          focusedErrorBorder: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.space16,
+            vertical: AppSpacing.space16,
+          ),
+        ),
+        selectorTextStyle: AppTextStyles.body.copyWith(
+          color: AppColors.orange400,
+          fontWeight: FontWeight.bold,
+        ),
+        textStyle: AppTextStyles.body,
+        validator: controller.validatePhone,
+        spaceBetweenSelectorAndTextField: 8,
+      ),
     );
   }
 
@@ -150,11 +151,7 @@ class LoginForm extends GetView<LoginController> {
           padding: EdgeInsets.symmetric(horizontal: AppSpacing.space16),
           child: Text(
             tr(LocaleKeys.or_enter_as_guest),
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.green900,
-              fontWeight: FontWeight.w500,
-              fontSize: 16,
-            ),
+            style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
           ),
         ),
         Expanded(child: Divider(color: AppColors.grayLessDark, thickness: 1)),
@@ -163,16 +160,16 @@ class LoginForm extends GetView<LoginController> {
   }
 
   Widget _buildBecomeProviderButton() {
-    return CustomButton(
-      text: tr(LocaleKeys.become_a_provider),
+    return OutlinedButton(
       onPressed: controller.becomeProvider,
-      type: ButtonType.outlined,
-      borderColor: AppColors.orange400,
-      textColor: AppColors.orange400,
-      textStyle: AppTextStyles.body.copyWith(
-        color: AppColors.orange400,
-        fontWeight: FontWeight.w500,
-        fontSize: 16,
+      style: OutlinedButton.styleFrom(
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.space16),
+        side: BorderSide(color: AppColors.orange400),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      child: Text(
+        tr(LocaleKeys.become_a_provider),
+        style: AppTextStyles.body.copyWith(color: AppColors.orange400, fontWeight: FontWeight.w500),
       ),
     );
   }
@@ -187,12 +184,12 @@ class LoginForm extends GetView<LoginController> {
         ),
         TextButton(
           onPressed: controller.goToRegister,
-          style: TextButton.styleFrom(padding: EdgeInsets.symmetric(horizontal: AppSpacing.space4)),
+          style: TextButton.styleFrom(padding: EdgeInsets.symmetric(horizontal: AppSpacing.space8)),
           child: Text(
             tr(LocaleKeys.click_here),
-            style: AppTextStyles.bodyBold.copyWith(
+            style: AppTextStyles.body.copyWith(
               color: AppColors.orange400,
-              decoration: TextDecoration.underline,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),

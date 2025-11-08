@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
 import '../../../../core/localization/strings.dart';
 import '../../../../core/routes/app_pages.dart';
@@ -16,12 +17,14 @@ class LoginController extends GetxController {
   // Form key
   final formKey = GlobalKey<FormState>();
 
+  // Phone number from intl_phone_number_input
+  final Rxn<PhoneNumber> phoneNumber = Rxn<PhoneNumber>();
+  final phoneNumberString = ''.obs;
+
   // Text controllers
-  final phoneController = TextEditingController();
   final passwordController = TextEditingController();
 
   // Focus nodes
-  final phoneFocusNode = FocusNode();
   final passwordFocusNode = FocusNode();
 
   // Observable states
@@ -37,9 +40,7 @@ class LoginController extends GetxController {
 
   @override
   void onClose() {
-    phoneController.dispose();
     passwordController.dispose();
-    phoneFocusNode.dispose();
     passwordFocusNode.dispose();
     super.onClose();
   }
@@ -50,7 +51,7 @@ class LoginController extends GetxController {
     final savedRememberMe = _storageService.read('remember_me') ?? false;
 
     if (savedRememberMe && savedPhone != null) {
-      phoneController.text = savedPhone;
+      phoneNumberString.value = savedPhone;
       rememberMe.value = true;
     }
   }
@@ -63,22 +64,30 @@ class LoginController extends GetxController {
     rememberMe.value = value ?? false;
   }
 
+  /// Called when phone number changes
+  void onPhoneNumberChanged(PhoneNumber number) {
+    phoneNumber.value = number;
+    phoneNumberString.value = number.phoneNumber ?? '';
+    debugPrint('📱 Phone changed: ${number.phoneNumber}');
+  }
+
   /// Validate phone number
   String? validatePhone(String? value) {
-    if (value == null || value.isEmpty) {
-      return tr(LocaleKeys.field_required);
+    if (value == null || value.trim().isEmpty) {
+      return tr(LocaleKeys.phone_required);
     }
-    // Syrian phone number format: 09XXXXXXXX (10 digits starting with 09)
-    if (!RegExp(r'^09[0-9]{8}$').hasMatch(value)) {
+
+    if (phoneNumber.value == null) {
       return tr(LocaleKeys.invalid_phone);
     }
+
     return null;
   }
 
   /// Validate password
   String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
-      return tr(LocaleKeys.field_required);
+      return tr(LocaleKeys.password_required);
     }
     if (value.length < 8) {
       return tr(LocaleKeys.password_too_short);
@@ -86,9 +95,39 @@ class LoginController extends GetxController {
     return null;
   }
 
+  /// Format phone for API - converts to 09XXXXXXXX format
+  String _formatPhoneForAPI(PhoneNumber phone) {
+    // For Syrian numbers, API expects: 09XXXXXXXX
+    if (phone.dialCode == '+963') {
+      // Get the national number without country code
+      String nationalNumber = phone.parseNumber();
+
+      // Remove +963 and any spaces
+      nationalNumber = nationalNumber.replaceAll('+963', '').replaceAll(' ', '').trim();
+
+      // Add leading 0 if not present
+      if (!nationalNumber.startsWith('0')) {
+        nationalNumber = '0$nationalNumber';
+      }
+
+      return nationalNumber;
+    }
+
+    // For other countries, return as is
+    return phone.phoneNumber ?? '';
+  }
+
   /// Login function with API integration
   Future<void> login() async {
+    // Validate form first
     if (!formKey.currentState!.validate()) {
+      debugPrint('❌ Form validation failed');
+      return;
+    }
+
+    // Check phone number
+    if (phoneNumber.value == null) {
+      _showError(tr(LocaleKeys.phone_required));
       return;
     }
 
@@ -96,8 +135,12 @@ class LoginController extends GetxController {
       isLoading.value = true;
       debugPrint('🔄 Starting login...');
 
+      // Format phone number for API
+      final formattedPhone = _formatPhoneForAPI(phoneNumber.value!);
+      debugPrint('📱 Phone formatted for API: $formattedPhone');
+
       final response = await _apiService.login(
-        phone: phoneController.text.trim(),
+        phone: formattedPhone,
         password: passwordController.text,
       );
 
@@ -123,7 +166,7 @@ class LoginController extends GetxController {
 
         // Save phone if remember me is checked
         if (rememberMe.value) {
-          _storageService.write('saved_phone', phoneController.text.trim());
+          _storageService.write('saved_phone', formattedPhone);
           _storageService.write('remember_me', true);
         } else {
           _storageService.remove('saved_phone');
@@ -168,7 +211,8 @@ class LoginController extends GetxController {
         _showError(message);
       }
     } on DioException catch (e) {
-      debugPrint('❌ Login error: ${e.message}');
+      debugPrint('❌ Login DioException: ${e.message}');
+      debugPrint('❌ Response: ${e.response?.data}');
 
       if (e.response != null) {
         final message = e.response?.data['message'] ?? tr(LocaleKeys.invalid_credentials);
@@ -189,7 +233,7 @@ class LoginController extends GetxController {
       tr(LocaleKeys.error),
       message,
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.error.withValues(alpha: 0.1),
+      backgroundColor: AppColors.error.withOpacity(0.1),
       colorText: AppColors.error,
       margin: const EdgeInsets.all(16),
       duration: const Duration(seconds: 3),

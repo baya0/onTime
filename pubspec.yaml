@@ -19,6 +19,8 @@ dependencies:
   easy_localization: ^3.0.8
   flutter_svg: ^2.2.1
   flutter_dotenv: ^6.0.0
+  phone_numbers_parser: ^9.0.16
+  intl_phone_number_input: ^0.7.5
  
 
 dev_dependencies:

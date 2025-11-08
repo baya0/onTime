@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
 import '../../../../core/localization/strings.dart';
 import '../../../../core/style/app_colors.dart';
@@ -78,7 +79,6 @@ class RegisterForm extends GetView<RegisterController> {
               ),
             ),
             validator: controller.validateLastName,
-            onSubmitted: (_) => controller.phoneFocusNode.requestFocus(),
           ),
         ),
       ],
@@ -86,48 +86,51 @@ class RegisterForm extends GetView<RegisterController> {
   }
 
   Widget _buildPhoneField() {
-    return CustomTextField(
-      controller: controller.phoneController,
-      focusNode: controller.phoneFocusNode,
-      hintText: tr(LocaleKeys.write_phone_number),
-      keyboardType: TextInputType.phone,
-      textInputAction: TextInputAction.next,
-      prefixIcon: Container(
-        padding: EdgeInsets.all(AppSpacing.space12),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.space8,
-                vertical: AppSpacing.space4,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Assets.icons.ui.phoneRing.svg(
-                    width: 20,
-                    height: 20,
-                    colorFilter: ColorFilter.mode(AppColors.orange400, BlendMode.srcIn),
-                  ),
-                  SizedBox(width: 5),
-                  Text(
-                    '+963',
-                    style: AppTextStyles.body.copyWith(
-                      color: AppColors.orange400,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(width: AppSpacing.space8),
-            Container(height: 24, width: 1, color: AppColors.grayLessDark),
-          ],
-        ),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.grayLessDark),
       ),
-      validator: controller.validatePhone,
-      onSubmitted: (_) => controller.cityFocusNode.requestFocus(),
+      child: InternationalPhoneNumberInput(
+        onInputChanged: (PhoneNumber number) {
+          controller.onPhoneNumberChanged(number);
+        },
+        onInputValidated: (bool isValid) {
+          debugPrint('📱 Phone validation: $isValid');
+        },
+        selectorConfig: const SelectorConfig(
+          selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
+          useEmoji: true,
+          setSelectorButtonAsPrefixIcon: true,
+          leadingPadding: 16,
+        ),
+        ignoreBlank: false,
+        autoValidateMode: AutovalidateMode.disabled,
+        initialValue: PhoneNumber(isoCode: 'SY'), // Default to Syria
+        formatInput: true,
+        keyboardType: TextInputType.phone,
+        inputDecoration: InputDecoration(
+          hintText: tr(LocaleKeys.write_phone_number),
+          hintStyle: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          errorBorder: InputBorder.none,
+          focusedErrorBorder: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.space16,
+            vertical: AppSpacing.space16,
+          ),
+        ),
+        selectorTextStyle: AppTextStyles.body.copyWith(
+          color: AppColors.orange400,
+          fontWeight: FontWeight.bold,
+        ),
+        textStyle: AppTextStyles.body,
+        validator: controller.validatePhone,
+        spaceBetweenSelectorAndTextField: 8,
+      ),
     );
   }
 
