@@ -18,36 +18,26 @@ class SplashController extends GetxController {
     try {
       debugPrint('🔄 Starting navigation check...');
 
-      // Wait 3 seconds
       await Future.delayed(const Duration(seconds: 3));
-      debugPrint('⏰ 3 seconds elapsed');
 
-      // Check if user has a token (proper authentication check)
       final token = _storage.read('token');
       final isLoggedIn = token != null && token.toString().isNotEmpty;
 
       debugPrint('🔑 Has token: $isLoggedIn');
-      debugPrint('🔑 Token value: ${token != null ? "exists" : "null"}');
 
       if (isLoggedIn) {
-        // User is authenticated, navigate to home
+        // Has token → Go to home
         debugPrint('✅ Navigating to home');
-        // TODO: Uncomment when home page is ready
-        // Get.offAllNamed(Routes.home);
-
-        // Temporary: Navigate to login until home is implemented
-        debugPrint('⚠️ Home not implemented yet, navigating to login');
-        Get.offAllNamed(Routes.login);
+        Get.offAllNamed(Routes.home); // When ready
+        // Get.offAllNamed(Routes.login); // Temporary
       } else {
-        // User is not authenticated, navigate to register page
-        debugPrint('🔑 No token found, navigating to register');
-        Get.offAllNamed(Routes.register);
+        // No token → Go to LOGIN (not register!)
+        debugPrint('🔑 No token found, navigating to LOGIN');
+        Get.offAllNamed(Routes.login); // ← CHANGE THIS
       }
     } catch (e, stackTrace) {
-      debugPrint('❌ Error in _navigateToNextScreen: $e');
-      debugPrint('Stack trace: $stackTrace');
-      // Fallback to register screen in case of error
-      Get.offAllNamed(Routes.register);
+      debugPrint('❌ Error: $e');
+      Get.offAllNamed(Routes.login); // ← CHANGE THIS TOO
     }
   }
 }
