@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -13,243 +15,261 @@ class VerifyController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
   final StorageService _storageService = Get.find<StorageService>();
 
-  // OTP controllers - 4 digit code
-  final List<TextEditingController> otpControllers = List.generate(
-    4,
-    (index) => TextEditingController(),
-  );
+  // Form key
+  final formKey = GlobalKey<FormState>();
 
-  // Focus nodes for OTP fields
-  final List<FocusNode> otpFocusNodes = List.generate(4, (index) => FocusNode());
+  // OTP controller for pinput
+  final otpController = TextEditingController();
+  final otpFocusNode = FocusNode();
+
+  // Phone number data
+  String? fullPhoneNumber;
+  String? cleanPhone; // For API (e.g., "0965237801")
+  String? dialCode; // For API (e.g., "+963")
+
+  // Flags
+  bool fromRegistration = false;
+  bool fromForgotPassword = false;
 
   // Observable states
   final isLoading = false.obs;
-  final isResending = false.obs;
-  final canResend = false.obs;
-  final resendTimer = 60.obs;
+  final resendCooldown = 0.obs;
+  final canResend = true.obs;
 
-  // User phone number from storage
-  String? userPhone;
+  Timer? _resendTimer;
 
   @override
   void onInit() {
     super.onInit();
-    _loadUserPhone();
+    _setupPhoneNumberFromArguments();
     _startResendTimer();
   }
 
   @override
   void onClose() {
-    for (var controller in otpControllers) {
-      controller.dispose();
-    }
-    for (var node in otpFocusNodes) {
-      node.dispose();
-    }
+    otpController.dispose();
+    otpFocusNode.dispose();
+    _resendTimer?.cancel();
     super.onClose();
   }
 
-  void _loadUserPhone() {
-    userPhone = _storageService.read('phone');
-    debugPrint('📱 User phone: $userPhone');
+  /// Setup phone number from navigation arguments
+  void _setupPhoneNumberFromArguments() {
+    if (Get.arguments != null && Get.arguments is Map) {
+      final args = Get.arguments as Map;
+
+      fullPhoneNumber = args['phoneNumber'] as String?;
+      cleanPhone = args['cleanPhone'] as String?;
+      dialCode = args['dialCode'] as String?;
+      fromRegistration = args['fromRegistration'] == true;
+      fromForgotPassword = args['fromForgotPassword'] == true;
+
+      debugPrint('📱 Verify setup:');
+      debugPrint('   Full phone: $fullPhoneNumber');
+      debugPrint('   Clean phone: $cleanPhone');
+      debugPrint('   Dial code: $dialCode');
+      debugPrint('   From registration: $fromRegistration');
+      debugPrint('   From forgot password: $fromForgotPassword');
+    } else {
+      // Fallback: Try to get from storage
+      cleanPhone = _storageService.read('phone');
+      debugPrint('⚠️ No arguments, using storage phone: $cleanPhone');
+    }
   }
 
+  /// Start 60-second cooldown timer for resend
   void _startResendTimer() {
-    resendTimer.value = 60;
+    resendCooldown.value = 60;
     canResend.value = false;
 
-    Future.doWhile(() async {
-      await Future.delayed(const Duration(seconds: 1));
-      if (resendTimer.value > 0) {
-        resendTimer.value--;
-        return true;
+    _resendTimer?.cancel();
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (resendCooldown.value > 0) {
+        resendCooldown.value--;
       } else {
         canResend.value = true;
-        return false;
+        timer.cancel();
       }
     });
   }
 
-  /// Get the complete OTP code
-  String getOtpCode() {
-    return otpControllers.map((controller) => controller.text).join();
-  }
-
-  /// Check if OTP is complete (all 4 digits filled)
-  bool isOtpComplete() {
-    return otpControllers.every((controller) => controller.text.isNotEmpty);
-  }
-
-  /// Handle OTP field changes
-  void onOtpChanged(int index, String value) {
-    if (value.isNotEmpty && index < 3) {
-      // Move to next field
-      otpFocusNodes[index + 1].requestFocus();
-    } else if (value.isEmpty && index > 0) {
-      // Move to previous field on delete
-      otpFocusNodes[index - 1].requestFocus();
+  /// Validate OTP (4 digits)
+  String? validateOTP(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return tr(LocaleKeys.field_required);
     }
-
-    // Auto-submit when all fields are filled
-    if (isOtpComplete()) {
-      verifyCode();
+    if (value.length != 4) {
+      return 'Code must be 4 digits';
     }
+    if (!RegExp(r'^\d{4}$').hasMatch(value)) {
+      return tr(LocaleKeys.invalid_code);
+    }
+    return null;
   }
 
-  /// Verify the OTP code
+  /// Verify OTP code
   Future<void> verifyCode() async {
-    if (!isOtpComplete()) {
-      _showError(tr(LocaleKeys.invalid_code));
+    // Validate
+    final validation = validateOTP(otpController.text);
+    if (validation != null) {
+      _showError(validation);
       return;
     }
 
-    if (userPhone == null) {
-      _showError('Phone number not found. Please login again.');
+    // Check if we have phone number
+    if (cleanPhone == null) {
+      _showError('Phone number not found. Please try again.');
       Get.offAllNamed(Routes.login);
       return;
     }
 
     try {
       isLoading.value = true;
-      debugPrint('🔄 Verifying code...');
+      debugPrint('🔄 Starting verification...');
+      debugPrint('   Phone: $cleanPhone');
+      debugPrint('   Code: ${otpController.text}');
 
-      final code = int.tryParse(getOtpCode());
-      if (code == null) {
-        _showError(tr(LocaleKeys.invalid_code));
-        return;
-      }
+      final code = int.parse(otpController.text.trim());
 
       final response = await _apiService.verifyCode(
-        phone: userPhone!,
+        phone: cleanPhone!,
         code: code,
-        forVerifyAccount: true, // 1 for account verification, 0 for forgot password
+        forVerifyAccount: !fromForgotPassword, // 1 for account, 0 for forgot password
       );
 
       debugPrint('📡 Verify response: ${response.data}');
 
       if (response.statusCode == 200 && response.data['success'] == true) {
-        final data = response.data['data'];
-        final user = data['user'];
-
-        // Update stored user data
-        _storageService.write('user_id', user['id']);
-        _storageService.write('first_name', user['first_name']);
-        _storageService.write('last_name', user['last_name']);
-        _storageService.write('phone', user['phone']);
-        _storageService.write('city_id', user['city_id']);
-        _storageService.write('is_verified', true);
-
-        debugPrint('✅ Verification successful');
-
-        Get.snackbar(
-          tr(LocaleKeys.success),
-          'Account verified successfully!',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.green500.withOpacity(0.1),
-          colorText: AppColors.green900,
-          margin: const EdgeInsets.all(16),
-          duration: const Duration(seconds: 2),
-        );
-
-        // Navigate to home
-        await Future.delayed(const Duration(seconds: 1));
-
-        // TODO: Uncomment when home page is ready
-        // Get.offAllNamed(Routes.home);
-
-        // For now, show a message
-        Get.snackbar(
-          tr(LocaleKeys.success),
-          'Navigate to home page',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.green500.withOpacity(0.1),
-          colorText: AppColors.green900,
-          margin: const EdgeInsets.all(16),
-        );
+        await _handleSuccessfulVerification(response);
       } else {
-        final message = response.data['message'] ?? tr(LocaleKeys.invalid_code);
+        final message = response.data['message'] ?? 'Verification failed';
         _showError(message);
-        _clearOtpFields();
+        _clearOTP();
       }
     } on DioException catch (e) {
       debugPrint('❌ Verify error: ${e.message}');
 
       if (e.response != null) {
-        final message = e.response?.data['message'] ?? tr(LocaleKeys.invalid_code);
+        final message = e.response?.data['message'] ?? 'Invalid code';
         _showError(message);
       } else {
         _showError(tr(LocaleKeys.network_error));
       }
-      _clearOtpFields();
+      _clearOTP();
     } catch (e) {
       debugPrint('❌ Unexpected verify error: $e');
-      _showError(tr(LocaleKeys.network_error));
-      _clearOtpFields();
+      _showError('Verification failed. Please try again.');
+      _clearOTP();
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  /// Handle successful verification
+  Future<void> _handleSuccessfulVerification(response) async {
+    final data = response.data['data'];
+
+    if (fromForgotPassword) {
+      // Handle forgot password flow
+      final resetToken = data['token'];
+
+      Get.snackbar(
+        tr(LocaleKeys.success),
+        'Phone verified! Set your new password.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.green500.withOpacity(0.1),
+        colorText: AppColors.green900,
+      );
+
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Navigate to reset password page
+      Get.offAllNamed(
+        Routes.resetPassword,
+        arguments: {'resetToken': resetToken, 'phone': cleanPhone},
+      );
+    } else {
+      // Handle registration/login verification
+      final user = data['user'];
+
+      // Update storage
+      _storageService.write('is_verified', true);
+      _storageService.write('user_id', user['id']);
+
+      Get.snackbar(
+        tr(LocaleKeys.success),
+        'Phone verified successfully!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.green500.withOpacity(0.1),
+        colorText: AppColors.green900,
+      );
+
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Navigate to home
+      // TODO: Uncomment when home is ready
+      // Get.offAllNamed(Routes.home);
+
+      // For now, show success message
+      Get.snackbar(
+        tr(LocaleKeys.success),
+        'Navigate to home page',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.green500.withOpacity(0.1),
+        colorText: AppColors.green900,
+      );
     }
   }
 
   /// Resend verification code
   Future<void> resendCode() async {
     if (!canResend.value) {
+      Get.snackbar(
+        'Wait',
+        'Please wait ${resendCooldown.value} seconds',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
 
-    if (userPhone == null) {
-      _showError('Phone number not found. Please login again.');
-      Get.offAllNamed(Routes.login);
+    if (cleanPhone == null) {
+      _showError('Phone number not found');
       return;
     }
 
     try {
-      isResending.value = true;
-      debugPrint('🔄 Resending code...');
+      isLoading.value = true;
+      debugPrint('🔄 Resending code to: $cleanPhone');
 
-      final response = await _apiService.resendCode(phone: userPhone!);
+      final response = await _apiService.resendCode(phone: cleanPhone!);
 
       debugPrint('📡 Resend response: ${response.data}');
 
       if (response.statusCode == 200 && response.data['success'] == true) {
-        debugPrint('✅ Code resent successfully');
-
         Get.snackbar(
           tr(LocaleKeys.success),
           tr(LocaleKeys.code_resent),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: AppColors.green500.withOpacity(0.1),
           colorText: AppColors.green900,
-          margin: const EdgeInsets.all(16),
         );
 
-        _clearOtpFields();
+        _clearOTP();
         _startResendTimer();
       } else {
-        final message = response.data['message'] ?? 'Failed to resend code';
-        _showError(message);
+        _showError('Failed to resend code');
       }
     } on DioException catch (e) {
       debugPrint('❌ Resend error: ${e.message}');
-
-      if (e.response != null) {
-        final message = e.response?.data['message'] ?? 'Failed to resend code';
-        _showError(message);
-      } else {
-        _showError(tr(LocaleKeys.network_error));
-      }
-    } catch (e) {
-      debugPrint('❌ Unexpected resend error: $e');
       _showError(tr(LocaleKeys.network_error));
     } finally {
-      isResending.value = false;
+      isLoading.value = false;
     }
   }
 
-  void _clearOtpFields() {
-    for (var controller in otpControllers) {
-      controller.clear();
-    }
-    otpFocusNodes[0].requestFocus();
+  void _clearOTP() {
+    otpController.clear();
+    otpFocusNode.requestFocus();
   }
 
   void _showError(String message) {
@@ -257,10 +277,14 @@ class VerifyController extends GetxController {
       tr(LocaleKeys.error),
       message,
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.error.withOpacity(0.1),
+      backgroundColor: AppColors.error.withValues(alpha: 0.1),
       colorText: AppColors.error,
       margin: const EdgeInsets.all(16),
       duration: const Duration(seconds: 3),
     );
+  }
+
+  void goBack() {
+    Get.back();
   }
 }

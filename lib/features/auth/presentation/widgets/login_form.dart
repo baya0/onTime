@@ -41,51 +41,63 @@ class LoginForm extends GetView<LoginController> {
   }
 
   Widget _buildPhoneField() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.grayLessDark),
+    return InternationalPhoneNumberInput(
+      onInputChanged: (PhoneNumber number) {
+        controller.onPhoneNumberChanged(number);
+      },
+      onInputValidated: (bool isValid) {
+        debugPrint('📱 Phone valid: $isValid');
+      },
+      selectorConfig: SelectorConfig(
+        selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
+        useEmoji: true,
+        setSelectorButtonAsPrefixIcon: true,
+        leadingPadding: 20,
+        trailingSpace: false,
       ),
-      child: InternationalPhoneNumberInput(
-        onInputChanged: (PhoneNumber number) {
-          controller.onPhoneNumberChanged(number);
-        },
-        onInputValidated: (bool isValid) {
-          debugPrint('📱 Phone validation: $isValid');
-        },
-        selectorConfig: const SelectorConfig(
-          selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
-          useEmoji: true,
-          setSelectorButtonAsPrefixIcon: true,
-          leadingPadding: 16,
+      ignoreBlank: false,
+      autoValidateMode: AutovalidateMode.disabled,
+      initialValue: PhoneNumber(isoCode: 'SY'),
+      formatInput: true,
+      keyboardType: TextInputType.phone,
+      inputDecoration: InputDecoration(
+        hintText: tr(LocaleKeys.write_phone_number),
+        hintStyle: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+        filled: true,
+        fillColor: AppColors.white,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.space16,
+          vertical: AppSpacing.space16,
         ),
-        ignoreBlank: false,
-        autoValidateMode: AutovalidateMode.disabled,
-        initialValue: PhoneNumber(isoCode: 'SY'), // Default to Syria
-        formatInput: true,
-        keyboardType: TextInputType.phone,
-        inputDecoration: InputDecoration(
-          hintText: tr(LocaleKeys.write_phone_number),
-          hintStyle: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          errorBorder: InputBorder.none,
-          focusedErrorBorder: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.space16,
-            vertical: AppSpacing.space16,
-          ),
+        // ✅ Styled borders like your design
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.grayLessDark, width: 1),
         ),
-        selectorTextStyle: AppTextStyles.body.copyWith(
-          color: AppColors.orange400,
-          fontWeight: FontWeight.bold,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.grayLessDark, width: 1),
         ),
-        textStyle: AppTextStyles.body,
-        validator: controller.validatePhone,
-        spaceBetweenSelectorAndTextField: 8,
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.orange400, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.error, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.error, width: 2),
+        ),
       ),
+      selectorTextStyle: AppTextStyles.body.copyWith(
+        color: AppColors.orange400,
+        fontWeight: FontWeight.bold,
+      ),
+      textStyle: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
+      validator: controller.validatePhone,
+      spaceBetweenSelectorAndTextField: 8,
     );
   }
 
