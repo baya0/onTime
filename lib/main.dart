@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 import 'core/routes/app_pages.dart';
+import 'core/routes/app_transitions.dart';
 import 'core/services/api_service.dart';
 import 'core/services/auth_service.dart';
 import 'core/services/storage_service.dart';
@@ -53,13 +54,14 @@ class MainApp extends StatelessWidget {
       locale: context.locale,
 
       // Initial Route
-      initialRoute: AppPages.initial, // ← Will start at Routes.splash
+      initialRoute: AppPages.initial,
       getPages: AppPages.routes,
 
-      // GetX Configuration
-      defaultTransition: Transition.cupertino,
-      transitionDuration: const Duration(milliseconds: 300),
+      defaultTransition: Transition.cupertino, // Fallback
+      transitionDuration: AppTransitions.standardDuration,
 
+      // Enable smooth page transitions
+      enableLog: false, // Disable in production
       // Error handling
       builder: (context, child) {
         return MediaQuery(
